@@ -1,0 +1,48 @@
+namespace VendorName\ModuleName\Controller\Adminhtml\ControllerName;
+
+use VendorName\ModuleName\Model\ModelNameFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\ResultFactory;
+
+class MassActionDelete extends Action implements HttpPostActionInterface
+{
+    protected $resultFactory;
+    protected $modelNameFactory;
+    protected $request;
+
+    public function __construct(Context $context, ResultFactory $resultFactory, ModelNameFactory $modelNameFactory, RequestInterface $request)
+    {
+        parent::__construct($context);
+        $this->request = $request;
+        $this->resultFactory = $resultFactory;
+        $this->modelNameFactory = $modelNameFactory;
+    }
+
+    public function execute()
+    {
+        $this->deleteEntityById();
+        $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+        $resultRedirect->setUrl($this->_redirect->getRefererUrl());
+        return $resultRedirect;
+    }
+
+    public function deleteEntityById()
+    {
+        $model = $this->modelNameFactory->create();
+
+        if (!empty($this->request->getParam('selected'))) {
+            foreach ($this->request->getParam('selected') as $k => $entityId) {
+                $model->load($entityId);
+                $model->delete();
+            }
+        } else {
+            foreach ($model->getCollection()->getitems() as $item) {
+                $model->load($item->getData('id'));
+                $model->delete();
+            }
+        }
+    }
+}

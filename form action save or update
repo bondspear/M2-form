@@ -1,0 +1,69 @@
+namespace VendorName\ModuleName\Controller\Adminhtml\ControllerName;
+
+use VendorName\ModuleName\Model\ModelNameFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\ResultFactory;
+
+class Update extends Action implements HttpPostActionInterface
+{
+    protected $resultFactory;
+    protected $modelNameFactory;
+    protected $request;
+
+    /**
+     * model attributes
+     */
+    const MODEL = [
+        'title',
+        'price'
+    ];
+
+    public function __construct(Context $context, ResultFactory $resultFactory, ModelNameFactory $modelNameFactory, RequestInterface $request)
+    {
+        parent::__construct($context);
+        $this->request = $request;
+        $this->resultFactory = $resultFactory;
+        $this->modelNameFactory = $modelNameFactory;
+    }
+
+    public function execute()
+    {
+        switch ($this->getProgramByRequest()) {
+            case "CREATE": $this->createEntity(); break;
+            case "UPDATE": $this->updateEntityById($this->request->getParam('id'));
+        }
+        $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+        $resultRedirect->setPath('*/*/index');
+        return $resultRedirect;
+    }
+
+    public function getProgramByRequest()
+    {
+        if (empty($this->request->getParam('id'))) {
+            return 'CREATE';
+        }
+        return 'UPDATE';
+    }
+
+    public function updateEntityById($entityId)
+    {
+        $model = $this->modelNameFactory->create();
+        $model->load($entityId);
+        $model->addData($this->request->getParams());
+        $model->save();
+    }
+
+    public function createEntity()
+    {
+        $data = [];
+        foreach (self::MODEL as $attribute) {
+            $data[$attribute] = $this->request->getParam($attribute);
+        }
+        $model = $this->modelNameFactory->create();
+        $model->setData($data);
+        $model->save();
+    }
+}

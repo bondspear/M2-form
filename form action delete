@@ -1,0 +1,55 @@
+namespace VendorName\ModuleName\Controller\Adminhtml\ControllerName;
+
+use VendorName\ModuleName\Model\ModelNameFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\ResultFactory;
+
+class Delete extends Action
+{
+    protected $resultFactory;
+    protected $modelNameFactory;
+    protected $request;
+
+    public function __construct(Context $context, ResultFactory $resultFactory, ModelNameFactory $modelNameFactory, RequestInterface $request)
+    {
+        parent::__construct($context);
+        $this->request = $request;
+        $this->resultFactory = $resultFactory;
+        $this->modelNameFactory = $modelNameFactory;
+    }
+
+    public function execute()
+    {
+        $this->deleteEntityById();
+        $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+        $resultRedirect->setPath('*/*/index');
+        return $resultRedirect;
+    }
+
+    public function deleteEntityById()
+    {
+        $entityId = $this->getIdFromUrl();
+
+        if ($entityId) {
+            $model = $this->modelNameFactory->create();
+            $model->load($entityId);
+            $model->delete();
+        }
+    }
+
+    public function getIdFromUrl()
+    {
+        $parts = explode('/', $this->request->getPathInfo());
+
+        if (!empty($parts[5]) and $parts[5] == 'id') {
+            if (!empty($parts[7]) and $parts[7] == 'key') {
+                if (!empty($parts[6])) {
+                    return intval($parts[6]);
+                }
+            }
+        }
+        return false;
+    }
+}

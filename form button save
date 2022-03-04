@@ -1,0 +1,21 @@
+namespace VendorName\ModuleName\Block\Adminhtml\Buttons;
+
+use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
+use Magento\Catalog\Block\Adminhtml\Product\Edit\Button\Generic;
+
+
+class Save extends Generic implements ButtonProviderInterface
+{
+    public function getButtonData()
+    {
+        return [
+            'label' => __('Save'),
+            'class' => 'save primary',
+            'data_attribute' => [
+                'mage-init' => ['button' => ['event' => 'save']],
+                'form-role' => 'save',
+            ],
+            'sort_order' => 30,
+        ];
+    }
+}
